@@ -16,8 +16,8 @@ router.get('/home', isLoggedin, async (req, res) => {
         res.render("dashboard");
     } catch (err) {
         console.error(err);
-        req.flash("error", "Error loading shop");
-        res.redirect('/home');
+        req.flash("error", "Error ");
+        res.redirect('/');
     }
 });
 
