@@ -10,6 +10,10 @@ router.get("/login", (req, res) => {
     const error = req.flash("error");
     res.render("login", { error });
 })
+router.get("/register_user", (req, res) => {
+    const error = req.flash("error");
+    res.render("register", { error });
+})
 router.get('/home', isLoggedin, async (req, res) => {
     try {
 

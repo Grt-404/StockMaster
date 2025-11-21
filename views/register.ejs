@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Scatch</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts: Montserrat & Oswald -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600&family=Oswald:wght@200;400;500&display=swap" rel="stylesheet">
+
+    <!-- Spline Viewer -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+        
+        h1, h2, h3, .brand-font {
+            font-family: 'Oswald', sans-serif;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+        /* Letter Wrap Animation */
+        .letter-wrap { display: inline-block; position: relative; overflow: hidden; }
+        .letter-wrap__word { display: inline-flex; position: relative; overflow: hidden; }
+        .letter-wrap__char {
+            display: inline-block; position: relative;
+            text-transform: uppercase;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .letter-wrap__char-inner { display: inline-block; }
+        .letter-wrap__char-inner:after {
+            content: attr(data-letter); position: absolute; top: 100%; left: 0; color: #fff;
+        }
+
+        /* Custom Cursor */
+        .cursor-dot, .cursor-outline {
+            position: fixed; top: 0; left: 0; transform: translate(-50%, -50%);
+            border-radius: 50%; z-index: 9999; pointer-events: none;
+        }
+        .cursor-dot { width: 8px; height: 8px; background-color: white; }
+        .cursor-outline {
+            width: 40px; height: 40px; border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        /* Premium Input Autofill */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px #09090b inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        
+        /* Premium Glass Gradient Border */
+        .premium-border {
+            position: relative;
+        }
+        .premium-border::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: linear-gradient(to bottom right, rgba(255,255,255,0.2), rgba(255,255,255,0.05), rgba(255,255,255,0));
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-black text-white h-screen w-full relative flex items-center justify-center selection:bg-white selection:text-black">
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- 3D Background (Consistent with Login but slightly shifted if possible via CSS, here using same URL for coherence) -->
+    <div class="absolute inset-0 z-0 opacity-50">
+        <spline-viewer url="https://prod.spline.design/os6NRsumsgqdhK5E/scene.splinecode"></spline-viewer>
+    </div>
+
+    <!-- Decorative 3D Object (Top Right for balance on Register page) -->
+    <div class="absolute top-10 right-10 w-48 h-48 z-10 hidden lg:block pointer-events-none mix-blend-plus-lighter opacity-80">
+         <spline-viewer url="https://prod.spline.design/1Bx9E-NcKxZ8ZYrC/scene.splinecode"></spline-viewer>
+    </div>
+
+    <!-- Main Register Container -->
+    <div class="relative z-20 w-full max-w-md p-6 md:p-8">
+        
+        <!-- Animated Header -->
+        <div class="text-center mb-10 overflow-hidden">
+            <div class="inline-block">
+                <h2 class="text-4xl md:text-6xl font-bold uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-zinc-500 split-text-anim">
+                    Join Us
+                </h2>
+            </div>
+            <p class="text-zinc-400 text-xs md:text-sm mt-3 tracking-[0.3em] uppercase opacity-0 fade-in-anim">
+                Begin your journey with Scatch
+            </p>
+        </div>
+
+        <!-- Register Form -->
+        <div class="premium-border bg-zinc-900/40 backdrop-blur-2xl p-8 rounded-none shadow-2xl transform transition-all duration-500 opacity-0 translate-y-10 form-container-anim">
+            
+            <form autocomplete="off" action="users/register" method="post" class="flex flex-col gap-6">
+                
+                <!-- Full Name -->
+                <div class="group relative">
+                    <input 
+                        class="w-full bg-transparent border-b border-zinc-700 py-3 text-white placeholder-transparent focus:outline-none focus:border-white transition-colors peer" 
+                        type="text" 
+                        name="fullname"
+                        id="fullname"
+                        required
+                    >
+                    <label for="fullname" class="absolute left-0 -top-3.5 text-zinc-500 text-xs transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-white peer-focus:text-xs">Full Name</label>
+                </div>
+
+                <!-- Email -->
+                <div class="group relative">
+                    <input 
+                        class="w-full bg-transparent border-b border-zinc-700 py-3 text-white placeholder-transparent focus:outline-none focus:border-white transition-colors peer" 
+                        type="email" 
+                        name="email"
+                        id="email"
+                        required
+                    >
+                    <label for="email" class="absolute left-0 -top-3.5 text-zinc-500 text-xs transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-white peer-focus:text-xs">Email Address</label>
+                </div>
+
+                <!-- Password -->
+                <div class="group relative">
+                    <input 
+                        class="w-full bg-transparent border-b border-zinc-700 py-3 text-white placeholder-transparent focus:outline-none focus:border-white transition-colors peer" 
+                        type="password" 
+                        name="password"
+                        id="password"
+                        required
+                    >
+                    <label for="password" class="absolute left-0 -top-3.5 text-zinc-500 text-xs transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-white peer-focus:text-xs">Password</label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full mt-6 group relative overflow-hidden bg-white text-black py-4 font-bold uppercase tracking-wider text-sm hover:bg-zinc-200 transition-colors">
+                    <div class="letter-wrap pointer-events-none">
+                        <span class="letter-wrap__word">
+                            <!-- Spells REGISTER -->
+                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="R">R</span></span>
+                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="E">E</span></span>
+                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="G">G</span></span>
+                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="I">I</span></span>
+                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="S">S</span></span>
+                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="T">T</span></span>
+                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="E">E</span></span>
+                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="R">R</span></span>
+                        </span>
+                    </div>
+                </button>
+
+            </form>
+
+            <div class="mt-8 text-center">
+                <p class="text-xs text-zinc-500 uppercase tracking-widest mb-2">Already have an account?</p>
+                <a href="/login" class="text-xs font-medium uppercase tracking-widest text-white border-b border-transparent hover:border-white transition-all pb-0.5">
+                    Login Here
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- GSAP & Logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/split-type"></script>
+
+    <script>
+        // --- Custom Cursor ---
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            gsap.to(cursorOutline, {
+                x: posX, y: posY, duration: 0.15, ease: "power2.out"
+            });
+        });
+
+        // --- Entrance Animations ---
+        const tl = gsap.timeline();
+        const myText = new SplitType('.split-text-anim', { types: 'chars' });
+        
+        tl.from(myText.chars, {
+            y: 100, opacity: 0, rotateX: -90, stagger: 0.05, delay: 0.5, duration: 1, ease: "back.out(1.7)"
+        })
+        .to('.fade-in-anim', { opacity: 1, duration: 1, ease: "power2.out" }, "-=0.5")
+        .to('.form-container-anim', { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, "-=0.5");
+
+        // --- Button Hover Animation (Letter Wrap) ---
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            const charInners = btn.querySelectorAll('.letter-wrap__char-inner');
+            btn.addEventListener('mouseenter', () => {
+                gsap.to(charInners, { y: '-100%', duration: 0.3, stagger: 0.025, ease: "power2.out" });
+            });
+            btn.addEventListener('mouseleave', () => {
+                gsap.to(charInners, { y: '0%', duration: 0.3, stagger: 0.025, ease: "power2.out" });
+            });
+        });
+
+        // --- Input Interactions ---
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                gsap.to(cursorOutline, { width: '60px', height: '60px', backgroundColor: 'rgba(255,255,255,0.1)', borderColor: 'transparent', duration: 0.3 });
+            });
+            input.addEventListener('blur', () => {
+                gsap.to(cursorOutline, { width: '40px', height: '40px', backgroundColor: 'transparent', borderColor: 'rgba(255,255,255,0.5)', duration: 0.3 });
+            });
+        });
+    </script>
+</body>
+</html>
