@@ -1,30 +1,20 @@
 const mongoose = require('mongoose');
-// const config = require('config'); // <-- Do not use the 'config' module here unless necessary
-const dbgr = require("debug")("development:mongoose")
+const config = require('config'); // Or use process.env directly if not using 'config' package
+const dbgr = require('debug')("development:mongoose");
 
-// Use the MONGODB_URI directly from environment variables (loaded by dotenv in app.js)
-const MONGODB_URI = process.env.MONGODB_URI;
+// 1. Load environment variables if not already loaded in app.js
+// require('dotenv').config(); 
 
-if (!MONGODB_URI) {
-    dbgr("FATAL ERROR: MONGODB_URI is not defined in environment variables. Please check your .env file.");
-} else {
-    // Attempt to connect using the URI and the hardcoded database name 'ODOO'
-    mongoose
-        // Use the connection string + database name (as per original logic)
-        .connect(`${MONGODB_URI}/ODOO`, {
-            // Include modern options to ensure stable connection
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 15000, // Increase timeout slightly for debugging
-            socketTimeoutMS: 45000,
-        })
-        .then(function () {
-            dbgr("CONNECTED: Successfully connected to MongoDB.");
-        })
-        .catch(function (err) {
-            // This catches connection failures after attempting to connect
-            dbgr("CONNECTION ERROR:", err.message);
-        })
-}
+// 2. Connect using the environment variable
+mongoose
+    .connect(`${process.env.MONGODB_URI}/scatch`) // Ensure '/scatch' or your DB name is appended
+    .then(function () {
+        dbgr("connected");
+        console.log("connected to MongoDB"); // Explicit console log for debugging
+    })
+    .catch(function (err) {
+        dbgr(err);
+        console.error("MongoDB connection error:", err); // Log the actual error
+    });
 
 module.exports = mongoose.connection;
