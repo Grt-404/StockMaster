@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockMaster | Warehouse Map</title>
+    
+    <link href="https://cdn.prod.website-files.com/67a323a1c68594827fa0cca9/css/soscale-39349c-c66c87b5666753b1b89d5bc1.webflow.shared.1aa2f82cd.css" rel="stylesheet" type="text/css"/>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <style>
+        body, html { height: 100%; margin: 0; background-color: #0e0e0e; }
+        
+        #map {
+            height: 80vh; /* Map takes 80% of screen height */
+            width: 100%;
+            z-index: 1;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .map-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #888;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .create-btn {
+            background: white;
+            color: black;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="map-header">
+        <div>
+            <a href="/home" class="back-btn">← Back to Dashboard</a>
+            <h2 style="margin: 10px 0 0 0; font-family: 'Oswald', sans-serif; font-size: 24px;">Warehouse Locations</h2>
+        </div>
+        <a href="/warehouses/create" class="create-btn">+ Add Warehouse</a>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        // 1. Initialize the map (Default view: World or specific region)
+        var map = L.map('map').setView([20.5937, 78.9629], 5); // Centered on India (Change coords as needed)
+
+        // 2. Add the dark theme tile layer (Matches your design)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // 3. Get Warehouse Data from Backend (injected via EJS)
+        // We use JSON.stringify to safely pass the object array to JavaScript
+        const warehouses = <%- JSON.stringify(warehouses) %>;
+
+        // 4. Loop through warehouses and add markers
+        warehouses.forEach(warehouse => {
+            if(warehouse.latitude && warehouse.longitude) {
+                
+                // Create a marker
+                var marker = L.marker([warehouse.latitude, warehouse.longitude]).addTo(map);
+                
+                // Add a popup with info
+                marker.bindPopup(`
+                    <div style="font-family: sans-serif; color: black;">
+                        <h3 style="margin: 0 0 5px 0; font-weight: bold;">${warehouse.name}</h3>
+                        <p style="margin: 0; font-size: 12px;">${warehouse.address || 'No Address'}</p>
+                        <a href="/operations?source=${warehouse._id}" style="display:block; margin-top:5px; color:blue;">View Stock</a>
+                    </div>
+                `);
+            }
+        });
+    </script>
+</body>
+</html>

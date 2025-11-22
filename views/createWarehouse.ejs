@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Add Warehouse</title>
+    <link href="https://cdn.prod.website-files.com/67a323a1c68594827fa0cca9/css/soscale-39349c-c66c87b5666753b1b89d5bc1.webflow.shared.1aa2f82cd.css" rel="stylesheet" type="text/css"/>
+    <style>
+        body { background-color: #0e0e0e; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; }
+        form { background: #1a1a1a; padding: 40px; border: 1px solid #333; width: 400px; }
+        input { width: 100%; padding: 10px; margin-bottom: 15px; background: #333; border: none; color: white; }
+        button { width: 100%; padding: 10px; background: white; border: none; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <form action="/warehouses/create" method="POST">
+        <h2 style="margin-top: 0;">Add Warehouse</h2>
+        
+        <label>Name</label>
+        <input type="text" name="name" placeholder="e.g. Central Hub" required>
+
+        <label>Address</label>
+        <input type="text" name="address" placeholder="City, Country">
+
+        <div style="display: flex; gap: 10px;">
+            <div>
+                <label>Latitude</label>
+                <input type="number" step="any" name="latitude" placeholder="e.g. 28.7041" required>
+            </div>
+            <div>
+                <label>Longitude</label>
+                <input type="number" step="any" name="longitude" placeholder="e.g. 77.1025" required>
+            </div>
+        </div>
+
+        <button type="submit">Create & Show on Map</button>
+    </form>
+</body>
+</html>

@@ -62,20 +62,20 @@
         <div class="dashboard-grid">
             
             <aside class="sidebar-menu">
-                <div style="margin-bottom: 40px;">
-                    <h3 class="kpi-label" style="color: white; margin-bottom: 20px;">Profile Menu</h3>
-                    <div class="sidebar-item" style="color: #fff;">
-                        Welcome, <%= typeof user !== 'undefined' ? user.fullname : 'User' %>
-                    </div>
-                    <a href="#" class="sidebar-item">My Profile</a>
-                    <a href="/users/logout" class="sidebar-item">Logout</a>
-                </div>
+    <div style="margin-bottom: 40px;">
+        <h3 class="kpi-label" style="color: white; margin-bottom: 20px;">Profile Menu</h3>
+        <div class="sidebar-item" style="color: #fff;">Welcome, <%= typeof user !== 'undefined' ? user.fullname : 'User' %></div>
+        <a href="/profile" class="sidebar-item">My Profile</a>
+        <a href="/users/logout" class="sidebar-item">Logout</a>
+    </div>
 
-                <h3 class="kpi-label" style="color: white; margin-bottom: 20px;">Quick Actions</h3>
-                <a href="/operations" class="sidebar-item">Incoming Receipts</a>
-                <a href="/operations" class="sidebar-item">Delivery Orders</a>
-                <a href="/products" class="sidebar-item">Check Stock</a>
-            </aside>
+    <h3 class="kpi-label" style="color: white; margin-bottom: 20px;">Quick Actions</h3>
+    <a href="/operations" class="sidebar-item">Incoming Receipts</a>
+    <a href="/operations" class="sidebar-item">Delivery Orders</a>
+    <a href="/products" class="sidebar-item">Check Stock</a>
+    
+    <a href="/warehouses/map" class="sidebar-item" style="color: #4dff88; border-color: #4dff88;">📍 Manage Warehouses</a>
+</aside>
 
             <div class="main-content">
                 

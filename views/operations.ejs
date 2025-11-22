@@ -139,38 +139,81 @@
             <div style="position:absolute; top:20px; right:20px; cursor:pointer; color:white;" onclick="closeModal()">✕</div>
             <h2 style="font-family: 'Oswald'; text-transform: uppercase; margin-bottom: 30px;">Create Operation</h2>
             
-            <form action="/operations/create" method="POST">
-                <div class="form-group">
-                    <label class="form-label">Operation Type</label>
-                    <select name="type" class="form-input" style="height: 45px;">
-                        <option value="Receipt">Receipt (Incoming / Vendor)</option>
-                        <option value="Delivery">Delivery (Outgoing / Customer)</option>
-                        <option value="Transfer">Internal Transfer</option>
-                    </select>
-                </div>
+           <form action="/operations/create" method="POST">
+    <div class="form-group">
+        <label class="form-label">Operation Type</label>
+        <select name="type" id="opType" class="form-input" style="height: 45px;" onchange="toggleLocations()">
+            <option value="Receipt">Receipt (Vendor -> Warehouse)</option>
+            <option value="Delivery">Delivery (Warehouse -> Customer)</option>
+            <option value="Transfer">Internal Transfer (A -> B)</option>
+            <option value="Adjustment">Inventory Adjustment</option>
+        </select>
+    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Partner (Optional)</label>
-                    <input type="text" name="partner" class="form-input" placeholder="e.g. Supplier Name or Customer Name">
-                </div>
+    <div class="form-group">
+        <label class="form-label">Partner / Reference</label>
+        <input type="text" name="partner" class="form-input" placeholder="Optional: Vendor Name or Order #">
+    </div>
 
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-                    <div class="form-group">
-                        <label class="form-label">Product</label>
-                        <select name="product" class="form-input" style="height: 45px;" required>
-                            <% products.forEach(function(prod) { %>
-                                <option value="<%= prod._id %>"><%= prod.name %> (Cur: <%= prod.stock %>)</option>
-                            <% }); %>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Quantity</label>
-                        <input type="number" name="quantity" class="form-input" value="1" min="1" required>
-                    </div>
-                </div>
+    <div id="location-fields" style="display: none; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div class="form-group">
+            <label class="form-label">From (Source)</label>
+            <select name="source" class="form-input" style="height: 45px;">
+                <option value="" disabled selected>Select Location</option>
+                <% warehouses.forEach(function(wh) { %>
+                    <option value="<%= wh._id %>"><%= wh.name %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">To (Destination)</label>
+            <select name="destination" class="form-input" style="height: 45px;">
+                <option value="" disabled selected>Select Location</option>
+                <% warehouses.forEach(function(wh) { %>
+                    <option value="<%= wh._id %>"><%= wh.name %></option>
+                <% }); %>
+            </select>
+        </div>
+    </div>
 
-                <button type="submit" class="create-btn">Save Draft</button>
-            </form>
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+        <div class="form-group">
+            <label class="form-label">Product</label>
+            <select name="product" class="form-input" style="height: 45px;" required>
+                <% products.forEach(function(prod) { %>
+                    <option value="<%= prod._id %>"><%= prod.name %> (Total: <%= prod.totalStock || prod.stock %>)</option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Quantity</label>
+            <input type="number" name="quantity" class="form-input" value="1" min="1" required>
+        </div>
+    </div>
+
+    <button type="submit" class="create-btn">Save Draft</button>
+</form>
+
+<script>
+    function toggleLocations() {
+        const type = document.getElementById('opType').value;
+        const locFields = document.getElementById('location-fields');
+        
+        // Show source/dest for Transfers. 
+        // Logic: 
+        // If Receipt: Source is Vendor (Hidden), Dest is Warehouse (Needed)
+        // If Delivery: Source is Warehouse (Needed), Dest is Customer (Hidden)
+        // If Transfer: Both Needed
+        
+        if (type === 'Transfer') {
+            locFields.style.display = 'grid';
+        } else {
+            // For simplicity in this version, we stick to standard logic, 
+            // but you can expand this to allow picking specific warehouses for Receipts too.
+            locFields.style.display = 'grid'; // Let user pick locations for all types for maximum control
+        }
+    }
+</script>
         </div>
     </div>
 

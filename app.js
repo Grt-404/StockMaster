@@ -10,6 +10,7 @@ const expressSession = require("express-session");
 const usersRouter = require('./routes/usersRouter');
 const productsRouter = require('./routes/productsRouter');
 const operationsRouter = require('./routes/operationsRouter');
+const warehouseRouter = require('./routes/warehouseRouter');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -34,7 +35,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/products', productsRouter);
 app.use('/operations', operationsRouter);
-
+app.use('/warehouses', warehouseRouter);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

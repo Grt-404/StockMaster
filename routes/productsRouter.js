@@ -1,34 +1,57 @@
 const express = require('express');
 const router = express.Router();
 const productModel = require('../models/product-model');
+const warehouseModel = require('../models/warehouse-model'); // Import Warehouse Model
 const isLoggedIn = require('../middlewares/isLoggedin');
 
-// GET Route: Display all products
+// GET: List Products (Now fetches warehouses too)
 router.get('/', isLoggedIn, async (req, res) => {
     try {
-        // Fetch all products, sorted by newest first
-        let products = await productModel.find().sort({ createdAt: -1 });
+        const products = await productModel.find()
+            .populate('stockByLocation.warehouse')
+            .sort({ createdAt: -1 });
 
-        // Render the 'products' view (we will create this next)
-        // Pass the products data and any flash messages
-        res.render('products', { products, success: req.flash('success') });
+        // Fetch warehouses for the "Create Product" dropdown
+        const warehouses = await warehouseModel.find({ type: 'Internal' });
+
+        res.render('products', {
+            products,
+            warehouses, // Pass warehouses to view
+            success: req.flash('success')
+        });
     } catch (err) {
         res.send(err.message);
     }
 });
 
-// POST Route: Create a new product
+// POST: Create Product (Now handles Initial Location)
 router.post('/create', isLoggedIn, async (req, res) => {
     try {
-        let { name, sku, category, unitOfMeasure, stock } = req.body;
+        let { name, sku, category, unitOfMeasure, stock, initialWarehouse } = req.body;
 
-        // Create the product using the data from the form
-        let product = await productModel.create({
+        let stockByLocation = [];
+        let totalStock = 0;
+
+        // If user provides opening stock, they MUST provide a location
+        if (stock && stock > 0) {
+            if (!initialWarehouse) {
+                req.flash('success', 'Error: Please select a warehouse for initial stock.');
+                return res.redirect('/products');
+            }
+            stockByLocation.push({
+                warehouse: initialWarehouse,
+                quantity: Number(stock)
+            });
+            totalStock = Number(stock);
+        }
+
+        await productModel.create({
             name,
             sku,
             category,
             unitOfMeasure,
-            stock: stock || 0 // Default to 0 if empty
+            stockByLocation, // Save the specific location data
+            totalStock       // Save the total
         });
 
         req.flash('success', 'Product created successfully');
@@ -37,21 +60,12 @@ router.post('/create', isLoggedIn, async (req, res) => {
         res.send(err.message);
     }
 });
+
+// ... (Keep History Route same as before) ...
 router.get('/:id/history', isLoggedIn, async (req, res) => {
-    try {
-        // 1. Find the specific product
-        const product = await productModel.findById(req.params.id);
-
-        // 2. Find all operations that contain this product
-        // We look inside the 'items' array for an item with this product ID
-        const operations = await require('../models/operation-model').find({
-            'items.product': req.params.id
-        }).sort({ createdAt: -1 }); // Newest first
-
-        // 3. Render the history view
-        res.render('product_history', { product, operations });
-    } catch (err) {
-        res.send(err.message);
-    }
+    const product = await productModel.findById(req.params.id);
+    const operations = await require('../models/operation-model').find({ 'items.product': req.params.id }).sort({ createdAt: -1 });
+    res.render('product_history', { product, operations });
 });
+
 module.exports = router;
