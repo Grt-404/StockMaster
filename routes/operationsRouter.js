@@ -5,21 +5,21 @@ const productModel = require('../models/product-model');
 const warehouseModel = require('../models/warehouse-model');
 const isLoggedIn = require('../middlewares/isLoggedin');
 
-// Helper: Update Stock Balance (Modified to support "SET" operation)
+
 async function updateStock(productId, warehouseId, qty, mode = 'add') {
     let product = await productModel.findById(productId);
 
-    // Find specific location entry
+
     let stockEntry = product.stockByLocation.find(s => s.warehouse.toString() === warehouseId.toString());
 
     if (stockEntry) {
         if (mode === 'set') {
-            stockEntry.quantity = qty; // Force set value (for Adjustments)
+            stockEntry.quantity = qty;
         } else {
-            stockEntry.quantity += qty; // Add/Subtract (for Receipts/Deliveries)
+            stockEntry.quantity += qty;
         }
     } else {
-        // If location doesn't exist yet
+
         if (mode === 'set') {
             product.stockByLocation.push({ warehouse: warehouseId, quantity: qty });
         } else {
@@ -27,15 +27,34 @@ async function updateStock(productId, warehouseId, qty, mode = 'add') {
         }
     }
 
-    // Recalculate Total Global Stock
+
     product.totalStock = product.stockByLocation.reduce((acc, curr) => acc + curr.quantity, 0);
     await product.save();
 }
 
-// GET: List Operations
+// ... imports (keep existing)
+
 router.get('/', isLoggedIn, async (req, res) => {
     try {
-        const operations = await operationModel.find()
+        let query = {};
+
+        // 1. Filter by Type (Receipt, Delivery...)
+        if (req.query.type) {
+            query.type = req.query.type;
+        }
+
+        // 2. Filter by Status (Draft, Done)
+        if (req.query.status) {
+            query.status = req.query.status;
+        }
+
+        // 3. Smart Search (Reference or Partner Name)
+        if (req.query.search) {
+            const searchRegex = new RegExp(req.query.search, 'i');
+            query.$or = [{ reference: searchRegex }, { partner: searchRegex }];
+        }
+
+        const operations = await operationModel.find(query)
             .populate('items.product')
             .populate('sourceLocation')
             .populate('destinationLocation')
@@ -48,6 +67,10 @@ router.get('/', isLoggedIn, async (req, res) => {
             operations,
             products,
             warehouses,
+            // Pass current filters back to view to keep inputs filled
+            search: req.query.search || '',
+            selectedType: req.query.type || '',
+            selectedStatus: req.query.status || '',
             success: req.flash('success'),
             error: req.flash('error')
         });
@@ -56,7 +79,10 @@ router.get('/', isLoggedIn, async (req, res) => {
     }
 });
 
-// POST: Create Operation
+// ... (Keep POST /create and POST /validate routes as is)
+
+
+
 router.post('/create', isLoggedIn, async (req, res) => {
     try {
         const { type, partner, product, quantity, source, destination, location } = req.body;

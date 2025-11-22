@@ -84,17 +84,37 @@
     <section class="dashboard-section">
         <div class="dashboard-grid">
             
-            <aside class="sidebar-menu">
-                <div style="margin-bottom: 40px;">
-                    <h3 class="form-label" style="color: white; margin-bottom: 20px;">Filters</h3>
-                    <a href="#" class="sidebar-item active">All Products</a>
-                    <a href="#" class="sidebar-item">Low Stock</a>
-                    <a href="#" class="sidebar-item">Raw Materials</a>
-                    <a href="#" class="sidebar-item">Finished Goods</a>
-                </div>
-                
-                <button onclick="openModal()" class="create-btn" style="width: 100%;">+ New Product</button>
-            </aside>
+           <aside class="sidebar-menu">
+    <form action="/products" method="GET" style="margin-bottom: 40px;">
+        <h3 class="form-label" style="color: white; margin-bottom: 15px;">Smart Filters</h3>
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+            <input type="text" name="search" class="form-input" placeholder="Search SKU or Name..." value="<%= search %>">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+            <select name="category" class="form-input" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                <% categories.forEach(cat => { %>
+                    <option value="<%= cat %>" <%= selectedCategory === cat ? 'selected' : '' %>><%= cat %></option>
+                <% }) %>
+            </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button name="filter" value="" class="sidebar-item <%= selectedFilter === '' && !selectedCategory ? 'active' : '' %>" style="background:none; border:none; text-align:left; cursor:pointer;">
+                All Products
+            </button>
+            <button name="filter" value="low_stock" class="sidebar-item <%= selectedFilter === 'low_stock' ? 'active' : '' %>" style="background:none; border:none; text-align:left; cursor:pointer; color: #ff4d4d;">
+                ⚠️ Low Stock
+            </button>
+        </div>
+
+        <button type="submit" style="display: none;"></button>
+    </form>
+    
+    <button onclick="openModal()" class="create-btn" style="width: 100%;">+ New Product</button>
+</aside>
 
             <div class="main-content">
                 

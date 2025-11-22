@@ -80,15 +80,36 @@
         <div class="dashboard-grid">
             
             <aside class="sidebar-menu">
-                <div style="margin-bottom: 40px;">
-                    <h3 class="form-label" style="color: white; margin-bottom: 20px;">Menu</h3>
-                    <a href="#" class="sidebar-item active">All Operations</a>
-                    <a href="#" class="sidebar-item">Receipts (IN)</a>
-                    <a href="#" class="sidebar-item">Deliveries (OUT)</a>
-                    <a href="#" class="sidebar-item">Adjustments</a>
-                </div>
-                <button onclick="openModal()" class="create-btn">+ New Operation</button>
-            </aside>
+    <form action="/operations" method="GET" style="margin-bottom: 40px;">
+        <h3 class="form-label" style="color: white; margin-bottom: 15px;">Filter Operations</h3>
+        
+        <div class="form-group" style="margin-bottom: 15px;">
+            <input type="text" name="search" class="form-input" placeholder="Ref # or Partner..." value="<%= search %>">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 10px;">
+            <select name="type" class="form-input" onchange="this.form.submit()">
+                <option value="">All Types</option>
+                <option value="Receipt" <%= selectedType === 'Receipt' ? 'selected' : '' %>>Receipts (IN)</option>
+                <option value="Delivery" <%= selectedType === 'Delivery' ? 'selected' : '' %>>Deliveries (OUT)</option>
+                <option value="Transfer" <%= selectedType === 'Transfer' ? 'selected' : '' %>>Transfers</option>
+                <option value="Adjustment" <%= selectedType === 'Adjustment' ? 'selected' : '' %>>Adjustments</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+            <select name="status" class="form-input" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                <option value="Draft" <%= selectedStatus === 'Draft' ? 'selected' : '' %>>Draft (Pending)</option>
+                <option value="Done" <%= selectedStatus === 'Done' ? 'selected' : '' %>>Done (Validated)</option>
+            </select>
+        </div>
+        
+        <a href="/operations" style="font-size: 12px; color: #666; text-decoration: underline;">Clear Filters</a>
+    </form>
+
+    <button onclick="openModal()" class="create-btn">+ New Operation</button>
+</aside>
 
             <div class="main-content">
                 
