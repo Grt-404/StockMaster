@@ -1,205 +1,425 @@
 <!DOCTYPE html>
-<html data-wf-domain="www.soscalemedia.se" lang="en">
+<html data-wf-domain="www.stockmaster.app" lang="en">
 <head>
     <meta charset="utf-8"/>
     <title>StockMaster | Operations</title>
-    <meta content="Manage inventory movements" name="description"/>
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
     
     <link href="https://cdn.prod.website-files.com/67a323a1c68594827fa0cca9/css/soscale-39349c-c66c87b5666753b1b89d5bc1.webflow.shared.1aa2f82cd.css" rel="stylesheet" type="text/css"/>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous"/>
     <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
-    <script type="text/javascript">WebFont.load({ google: { families: ["Montserrat:100,100italic,200,200italic,300,300italic,400,400italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic","Oswald:200,300,400,500,600,700"] }});</script>
+    <script type="text/javascript">WebFont.load({  google: {    families: ["Montserrat:100,100italic,200,200italic,300,300italic,400,400italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic","Oswald:200,300,400,500,600,700"]  }});</script>
     
+    <link href="https://cdn.jsdelivr.net/npm/splitting@1.0.6/dist/splitting.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer ></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.23/bundled/lenis.min.js"></script>
+
     <style>
-        /* Layout CSS */
-        .dashboard-section { padding-top: 120px; padding-bottom: 60px; min-height: 100vh; background-color: #0e0e0e; color: white; }
-        .dashboard-grid { display: grid; grid-template-columns: 250px 1fr; gap: 40px; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
-        
-        /* Sidebar */
+        /* --- Shared Dashboard Styles --- */
+        body { background-color: #0e0e0e; color: #edf2f4; font-family: 'Montserrat', sans-serif; }
+        .w-webflow-badge { display: none !important; } 
+        html.lenis { height: auto; }
+        .lenis.lenis-smooth { scroll-behavior: auto; }
+
+        /* Letter Wrap Animation */
+        .letter-wrap { display: inline-block; position: relative; } 
+        .letter-wrap * { pointer-events: none; } 
+        .letter-wrap__word { display: inline-flex; position: relative; overflow: hidden; } 
+        .letter-wrap__char { display: inline-block; position: relative; text-transform: uppercase; } 
+        .letter-wrap__char-inner { display: inline-block; } 
+        .letter-wrap__char-inner:after { content: attr(data-letter); position: absolute; top: 100%; left: 0; }
+
+        /* Layout */
+        .dashboard-section { 
+            padding-top: 160px; 
+            padding-bottom: 100px; 
+            min-height: 100vh; 
+            background-color: #0e0e0e; 
+            color: #edf2f4; 
+            position: relative;
+            z-index: 2;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0e0e0e 100%);
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            width: 95vw;
+            margin: 40px auto 0;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 40px;
+        }
+
+        /* Header */
+        .dashboard-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 90px;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(14, 14, 14, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        .nav-left { display: flex; align-items: center; gap: 30px; }
+        .nav-logo-text {
+            font-family: 'Oswald', sans-serif;
+            font-size: 24px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .nav-center {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 5px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .nav-pill {
+            padding: 8px 20px;
+            border-radius: 20px;
+            color: #888;
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-pill:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
+        .nav-pill.active { color: #000; background: #fff; font-weight: 600; }
+        .nav-right { display: flex; align-items: center; gap: 20px; }
+        .user-status { display: flex; align-items: center; gap: 8px; font-family: 'Oswald', sans-serif; font-size: 14px; color: #fff; }
+        .status-dot { width: 8px; height: 8px; background: #4dff88; border-radius: 50%; box-shadow: 0 0 8px #4dff88; animation: pulse 2s infinite; }
+        .logout-btn {
+            display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
+            color: #fff; text-decoration: none; font-family: 'Oswald', sans-serif;
+            text-transform: uppercase; font-size: 12px; transition: all 0.3s;
+        }
+        .logout-btn:hover { background: #fff; color: #000; border-color: #fff; }
+
+        /* Ticker */
+        .ticker-wrapper {
+            position: fixed;
+            top: 90px;
+            width: 100%;
+            background: rgba(0,0,0,0.8);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+            white-space: nowrap;
+            z-index: 5;
+            padding: 6px 0;
+        }
+        .ticker-text {
+            display: inline-block;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #4dff88;
+            letter-spacing: 1px;
+            animation: ticker 40s linear infinite;
+        }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* Sidebar Styles */
         .sidebar-menu { border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; }
-        .sidebar-item { display: block; padding: 15px 0; color: #888; text-decoration: none; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 16px; transition: color 0.3s; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .sidebar-item:hover, .sidebar-item.active { color: #fff; }
-
-        /* Table */
-        .ops-table { width: 100%; border-collapse: collapse; margin-top: 30px; font-family: 'Montserrat', sans-serif; }
-        .ops-table th { text-align: left; padding: 15px; border-bottom: 2px solid #fff; font-family: 'Oswald', sans-serif; text-transform: uppercase; color: #888; font-size: 12px; }
-        .ops-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 14px; vertical-align: middle; }
+        .sidebar-header {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 15px;
+            margin-top: 30px;
+        }
         
-        /* Status Badges */
-        .status-badge { padding: 5px 10px; border-radius: 4px; font-size: 11px; text-transform: uppercase; font-weight: 600; display: inline-block; }
-        .status-draft { background: rgba(255, 255, 255, 0.1); color: #aaa; border: 1px solid #555; }
-        .status-done { background: rgba(77, 255, 136, 0.1); color: #4dff88; border: 1px solid #4dff88; }
-        
-        .validate-btn { background: white; color: black; border: none; padding: 6px 12px; font-family: 'Oswald'; text-transform: uppercase; font-size: 12px; cursor: pointer; transition: 0.2s; }
-        .validate-btn:hover { background: #4dff88; color: black; }
-
-        /* Modal Styles */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #1a1a1a; padding: 40px; width: 100%; max-width: 600px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
-        .close-modal { position: absolute; top: 20px; right: 20px; cursor: pointer; color: white; font-family: 'Oswald'; }
-
+        /* Form Inputs */
         .form-group { margin-bottom: 20px; }
         .form-label { display: block; color: #888; margin-bottom: 8px; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 12px; }
-        .form-input { width: 100%; padding: 12px; background: #0e0e0e; border: 1px solid rgba(255,255,255,0.1); color: white; font-family: 'Montserrat', sans-serif; }
-        .form-input:focus { border-color: #4dff88; outline: none; }
+        .form-input { 
+            width: 100%; 
+            padding: 12px; 
+            background: #121212; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            color: white; 
+            font-family: 'Montserrat', sans-serif; 
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        .form-input:focus { border-color: #4dff88; outline: none; background: #000; }
 
-        .create-btn { display: inline-block; padding: 12px 30px; background: white; color: black; text-transform: uppercase; font-family: 'Oswald', sans-serif; font-size: 14px; border: none; cursor: pointer; width: 100%; transition: 0.3s; }
-        .create-btn:hover { background: #4dff88; }
+        .create-btn { 
+            display: inline-block; 
+            padding: 12px 30px; 
+            background: #fff; 
+            color: #000; 
+            text-transform: uppercase; 
+            font-family: 'Oswald', sans-serif; 
+            font-size: 14px; 
+            border: none; 
+            cursor: pointer; 
+            width: 100%; 
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+        .create-btn:hover { background: #4dff88; box-shadow: 0 0 15px rgba(77, 255, 136, 0.3); }
+        
+        /* Operations Table */
+        .ops-table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        .ops-table th { 
+            text-align: left; 
+            padding: 15px; 
+            border-bottom: 1px solid #4dff88; 
+            font-family: 'Oswald', sans-serif; 
+            text-transform: uppercase; 
+            color: #888; 
+            font-size: 12px; 
+            letter-spacing: 1px;
+        }
+        .ops-table td { 
+            padding: 15px; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            color: #fff; 
+            font-size: 14px; 
+            vertical-align: middle; 
+            font-family: 'Montserrat', sans-serif; 
+        }
+        .ops-table tr:hover td { background: rgba(255,255,255,0.02); }
 
-        .w-webflow-badge { display: none !important; } 
+        /* Status Badges */
+        .status-badge { padding: 4px 10px; border-radius: 2px; font-size: 10px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; display: inline-block; }
+        .status-draft { background: rgba(255, 255, 255, 0.1); color: #aaa; border: 1px solid rgba(255,255,255,0.2); }
+        .status-done { background: rgba(77, 255, 136, 0.1); color: #4dff88; border: 1px solid #4dff88; }
+        
+        .validate-btn { 
+            background: transparent; 
+            color: #fff; 
+            border: 1px solid #fff; 
+            padding: 6px 16px; 
+            font-family: 'Oswald'; 
+            text-transform: uppercase; 
+            font-size: 11px; 
+            cursor: pointer; 
+            transition: 0.2s;
+            border-radius: 2px;
+        }
+        .validate-btn:hover { background: #4dff88; color: black; border-color: #4dff88; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .modal-box { 
+            background: #1a1a1a; 
+            padding: 40px; 
+            width: 100%; 
+            max-width: 600px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            position: relative; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .close-modal { position: absolute; top: 20px; right: 20px; cursor: pointer; color: #666; font-family: 'Oswald'; transition: 0.3s; }
+        .close-modal:hover { color: #fff; }
+
+        /* Footer */
+        .footer { padding: 50px 40px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 60px; }
+        .footer-text { color: #666; font-size: 12px; text-transform: uppercase; font-family: 'Montserrat'; }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .dashboard-nav { padding: 0 20px; height: 70px; }
+            .nav-center { display: none; }
+            .ticker-wrapper { top: 70px; }
+            .dashboard-section { padding-top: 140px; }
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar-menu { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 30px; margin-bottom: 30px; padding-right: 0; }
+        }
     </style>
-    
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer ></script>
 </head>
 
-<body class="body">
+<body>
 
-    <nav class="hero-wrap">
-        <a href="/" class="header-text-left _1 fixed-right-mob w-inline-block"><div class="letter-wrap black">STOCKMASTER</div></a>
-        <div class="header-text-left fixed-left">
-            <div class="header-text-left fix-size">
-                <a href="/home" class="menu-link-block w-inline-block"><div class="letter-wrap">Dashboard</div></a>
-                <a href="/products" class="menu-link-block w-inline-block"><div class="letter-wrap">Products</div></a>
-                <a href="/operations" aria-current="page" class="menu-link-block w-inline-block w--current"><div class="letter-wrap">Operations</div></a>
-            </div>
-            <div class="header-text-left fix-size">
-                <a href="/warehouses/map" class="menu-link-block w-inline-block"><div class="letter-wrap">Warehouse</div></a>
-                <a href="/settings" class="menu-link-block w-inline-block"><div class="letter-wrap">Settings</div></a>
-            </div>
+    <nav class="dashboard-nav">
+        <div class="nav-left">
+            <a href="/" class="w-inline-block" style="text-decoration: none;">
+                <div class="nav-logo-text">Stock Master</div>
+            </a>
         </div>
-        <div class="header-text-left fixed-center"><div class="hacker-text _1">Operations & Moves</div></div>
-        <a href="/users/logout" class="header-text-left _1 fixed-right w-inline-block">
-            <img src="https://cdn.prod.website-files.com/67a323a1c68594827fa0cca9/67a323a1c68594827fa0ccb4_Vector.svg" alt="" class="arrow-black"/>
-            <div class="letter-wrap black">LOGOUT</div>
-        </a>
+
+        <div class="nav-center">
+            <a href="/home" class="nav-pill">
+                <span class="letter-wrap">Dashboard</span>
+            </a>
+            <a href="/products" class="nav-pill">
+                <span class="letter-wrap">Products</span>
+            </a>
+            <a href="/operations" aria-current="page" class="nav-pill active">
+                <span class="letter-wrap">Operations</span>
+            </a>
+            <a href="/warehouses/map" class="nav-pill">
+                <span class="letter-wrap">Map</span>
+            </a>
+        </div>
+
+        <div class="nav-right">
+            <div class="user-status">
+                <div class="status-dot"></div>
+                <span>Live</span>
+            </div>
+            <a href="/users/logout" class="logout-btn">
+                Logout
+                <img src="https://cdn.prod.website-files.com/67a323a1c68594827fa0cca9/67a323a1c68594827fa0ccb4_Vector.svg" width="12" alt="" style="filter: invert(1);">
+            </a>
+        </div>
     </nav>
 
+    <div class="ticker-wrapper">
+        <div class="ticker-text">
+            SYSTEM STATUS: OPERATIONAL &nbsp;&nbsp;//&nbsp;&nbsp; SYNC: ACTIVE &nbsp;&nbsp;//&nbsp;&nbsp; DATABASE: CONNECTED &nbsp;&nbsp;//&nbsp;&nbsp; REAL-TIME LOGGING ENABLED &nbsp;&nbsp;//&nbsp;&nbsp;
+            SYSTEM STATUS: OPERATIONAL &nbsp;&nbsp;//&nbsp;&nbsp; SYNC: ACTIVE &nbsp;&nbsp;//&nbsp;&nbsp; DATABASE: CONNECTED &nbsp;&nbsp;//&nbsp;&nbsp; REAL-TIME LOGGING ENABLED &nbsp;&nbsp;//&nbsp;&nbsp;
+        </div>
+    </div>
+
     <section class="dashboard-section">
-        <div class="dashboard-grid">
+        <div class="dashboard-container">
             
             <aside class="sidebar-menu">
-    <form action="/operations" method="GET" style="margin-bottom: 40px;">
-        <h3 class="form-label" style="color: white; margin-bottom: 15px;">Filter Operations</h3>
-        
-        <div class="form-group" style="margin-bottom: 15px;">
-            <input type="text" name="search" class="form-input" placeholder="Ref # or Partner..." value="<%= search %>">
-        </div>
+                <div class="sidebar-header">Filters</div>
+                <form action="/operations" method="GET" style="margin-bottom: 40px;">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <input type="text" name="search" class="form-input" placeholder="Ref # or Partner..." value="<%= search %>">
+                    </div>
 
-        <div class="form-group" style="margin-bottom: 10px;">
-            <select name="type" class="form-input" onchange="this.form.submit()">
-                <option value="">All Types</option>
-                <option value="Receipt" <%= selectedType === 'Receipt' ? 'selected' : '' %>>Receipts (IN)</option>
-                <option value="Delivery" <%= selectedType === 'Delivery' ? 'selected' : '' %>>Deliveries (OUT)</option>
-                <option value="Transfer" <%= selectedType === 'Transfer' ? 'selected' : '' %>>Transfers</option>
-                <option value="Adjustment" <%= selectedType === 'Adjustment' ? 'selected' : '' %>>Adjustments</option>
-            </select>
-        </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <select name="type" class="form-input" onchange="this.form.submit()">
+                            <option value="">All Types</option>
+                            <option value="Receipt" <%= selectedType === 'Receipt' ? 'selected' : '' %>>Receipts (IN)</option>
+                            <option value="Delivery" <%= selectedType === 'Delivery' ? 'selected' : '' %>>Deliveries (OUT)</option>
+                            <option value="Transfer" <%= selectedType === 'Transfer' ? 'selected' : '' %>>Transfers</option>
+                            <option value="Adjustment" <%= selectedType === 'Adjustment' ? 'selected' : '' %>>Adjustments</option>
+                        </select>
+                    </div>
 
-        <div class="form-group" style="margin-bottom: 15px;">
-            <select name="status" class="form-input" onchange="this.form.submit()">
-                <option value="">All Statuses</option>
-                <option value="Draft" <%= selectedStatus === 'Draft' ? 'selected' : '' %>>Draft (Pending)</option>
-                <option value="Done" <%= selectedStatus === 'Done' ? 'selected' : '' %>>Done (Validated)</option>
-            </select>
-        </div>
-        
-        <a href="/operations" style="font-size: 12px; color: #666; text-decoration: underline;">Clear Filters</a>
-    </form>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <select name="status" class="form-input" onchange="this.form.submit()">
+                            <option value="">All Statuses</option>
+                            <option value="Draft" <%= selectedStatus === 'Draft' ? 'selected' : '' %>>Draft (Pending)</option>
+                            <option value="Done" <%= selectedStatus === 'Done' ? 'selected' : '' %>>Done (Validated)</option>
+                        </select>
+                    </div>
+                    
+                    <a href="/operations" style="font-size: 12px; color: #666; text-decoration: underline; font-family: 'Montserrat';">Clear Filters</a>
+                </form>
 
-    <button onclick="openModal()" class="create-btn">+ New Operation</button>
-</aside>
+                <div class="sidebar-header">Actions</div>
+                <button onclick="openModal()" class="create-btn">+ New Operation</button>
+            </aside>
 
             <div class="main-content">
                 
+                <div style="margin-bottom: 30px;">
+                    <h1 class="heading-scroll" style="font-family: 'Oswald'; font-size: 40px; margin: 0; text-transform: uppercase;">Operations History</h1>
+                    <div style="color: #888; font-size: 14px; margin-top: 5px;">Manage all incoming and outgoing inventory movements.</div>
+                </div>
+
                 <% if (success && success.length > 0) { %>
-                    <div style="background: rgba(77, 255, 136, 0.1); color: #4dff88; padding: 15px; border: 1px solid #4dff88; margin-bottom: 20px; font-family: 'Oswald';"><%= success %></div>
+                    <div style="background: rgba(77, 255, 136, 0.1); color: #4dff88; padding: 15px; border: 1px solid #4dff88; margin-bottom: 20px; font-family: 'Oswald'; border-radius: 4px;"><%= success %></div>
                 <% } %>
                 <% if (error && error.length > 0) { %>
-                    <div style="background: rgba(255, 77, 77, 0.1); color: #ff4d4d; padding: 15px; border: 1px solid #ff4d4d; margin-bottom: 20px; font-family: 'Oswald';"><%= error %></div>
+                    <div style="background: rgba(255, 77, 77, 0.1); color: #ff4d4d; padding: 15px; border: 1px solid #ff4d4d; margin-bottom: 20px; font-family: 'Oswald'; border-radius: 4px;"><%= error %></div>
                 <% } %>
 
-                <h2 style="font-family: 'Oswald', sans-serif; font-size: 32px; margin-bottom: 20px;">Movement History</h2>
-
-                <table class="ops-table">
-                    <thead>
-                        <tr>
-                            <th>Reference</th>
-                            <th>Type</th>
-                            <th>Source</th>
-                            <th>Destination</th>
-                            <th>Product</th>
-                            <th>Qty</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (operations.length > 0) { %>
-                            <% operations.forEach(function(op) { %>
-                                <tr>
-                                    <td style="font-family: 'Oswald'; letter-spacing: 1px;"><%= op.reference %></td>
-                                    <td>
-                                        <% if(op.type == 'Receipt') { %><span style="color:#4dff88">IN</span><% } %>
-                                        <% if(op.type == 'Delivery') { %><span style="color:#ffaa4d">OUT</span><% } %>
-                                        <% if(op.type == 'Transfer') { %><span>INT</span><% } %>
-                                        <% if(op.type == 'Adjustment') { %><span style="color:#aaa">ADJ</span><% } %>
-                                    </td>
-                                    
-                                    <td style="font-size: 12px; color: #888;">
-                                        <%= op.sourceLocation ? op.sourceLocation.name : (op.type === 'Adjustment' ? 'Manual Count' : 'Vendor') %>
-                                    </td>
-                                    
-                                    <td style="font-size: 12px; color: #888;">
-                                        <%= op.destinationLocation ? op.destinationLocation.name : (op.type === 'Adjustment' ? 'Update' : 'Customer') %>
-                                    </td>
-
-                                    <td>
-                                        <% if(op.items[0] && op.items[0].product) { %>
-                                            <%= op.items[0].product.name %>
-                                        <% } else { %>
-                                            <span style="color:#555;">Deleted</span>
-                                        <% } %>
-                                    </td>
-                                    
-                                    <td><%= op.items[0].quantity %></td>
-                                    
-                                    <td>
-                                        <span class="status-badge <%= op.status == 'Done' ? 'status-done' : 'status-draft' %>">
-                                            <%= op.status %>
-                                        </span>
-                                    </td>
-                                    
-                                    <td>
-                                        <% if (op.status === 'Draft') { %>
-                                            <form action="/operations/validate/<%= op._id %>" method="POST" style="display:inline;">
-                                                <button type="submit" class="validate-btn">Validate</button>
-                                            </form>
-                                        <% } else { %>
-                                            <span style="color:#555; font-size:12px;">LOCKED</span>
-                                        <% } %>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
-                            <tr><td colspan="8" style="text-align:center; padding: 30px; color: #666;">No operations found.</td></tr>
-                        <% } %>
-                    </tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table class="ops-table">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Type</th>
+                                <th>Source</th>
+                                <th>Destination</th>
+                                <th>Product</th>
+                                <th>Qty</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (operations.length > 0) { %>
+                                <% operations.forEach(function(op) { %>
+                                    <tr>
+                                        <td style="font-family: 'Oswald'; letter-spacing: 1px; color: #fff;"><%= op.reference %></td>
+                                        <td>
+                                            <% if(op.type == 'Receipt') { %><span style="color:#4dff88; font-weight: 600;">IN</span><% } %>
+                                            <% if(op.type == 'Delivery') { %><span style="color:#ff4d4d; font-weight: 600;">OUT</span><% } %>
+                                            <% if(op.type == 'Transfer') { %><span style="color:#fff;">INT</span><% } %>
+                                            <% if(op.type == 'Adjustment') { %><span style="color:#888;">ADJ</span><% } %>
+                                        </td>
+                                        <td style="font-size: 12px; color: #888;">
+                                            <%= op.sourceLocation ? op.sourceLocation.name : (op.type === 'Adjustment' ? 'Manual Count' : 'Vendor') %>
+                                        </td>
+                                        <td style="font-size: 12px; color: #888;">
+                                            <%= op.destinationLocation ? op.destinationLocation.name : (op.type === 'Adjustment' ? 'Update' : 'Customer') %>
+                                        </td>
+                                        <td>
+                                            <% if(op.items[0] && op.items[0].product) { %>
+                                                <%= op.items[0].product.name %>
+                                            <% } else { %>
+                                                <span style="color:#555;">Deleted</span>
+                                            <% } %>
+                                        </td>
+                                        <td style="font-family: 'Oswald';"><%= op.items[0].quantity %></td>
+                                        <td>
+                                            <span class="status-badge <%= op.status == 'Done' ? 'status-done' : 'status-draft' %>">
+                                                <%= op.status %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <% if (op.status === 'Draft') { %>
+                                                <form action="/operations/validate/<%= op._id %>" method="POST" style="display:inline;">
+                                                    <button type="submit" class="validate-btn">Validate</button>
+                                                </form>
+                                            <% } else { %>
+                                                <span style="color:#333; font-size:10px; font-family: 'Oswald';">LOCKED</span>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr><td colspan="8" style="text-align:center; padding: 30px; color: #666;">No operations found.</td></tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+    </section>
+
+    <section class="footer">
+        <div class="footer-text">StockMaster IMS v1.0 © 2025</div>
     </section>
 
     <div id="createModal" class="modal-overlay">
         <div class="modal-box">
             <div class="close-modal" onclick="closeModal()">✕</div>
-            <h2 style="font-family: 'Oswald'; text-transform: uppercase; margin-bottom: 30px;">New Movement</h2>
+            <h2 style="font-family: 'Oswald'; text-transform: uppercase; margin-bottom: 5px; font-size: 24px; color: #fff;">New Movement</h2>
+            <div style="color: #666; font-size: 12px; margin-bottom: 30px; font-family: 'Montserrat';">Create a new stock move or adjustment.</div>
             
             <form action="/operations/create" method="POST">
                 <div class="form-group">
                     <label class="form-label">Operation Type</label>
-                    <select name="type" id="opType" class="form-input" style="height: 45px;" onchange="updateFormLayout()" required>
+                    <select name="type" id="opType" class="form-input" onchange="updateFormLayout()" required>
                         <option value="Receipt">Receipt (Inbound from Vendor)</option>
                         <option value="Delivery">Delivery (Outbound to Customer)</option>
                         <option value="Transfer">Internal Transfer (Warehouse to Warehouse)</option>
@@ -213,7 +433,6 @@
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    
                     <div class="form-group" id="sourceGroup" style="display:none;">
                         <label class="form-label">Source Location</label>
                         <select name="source" class="form-input">
@@ -260,20 +479,51 @@
                     </div>
                 </div>
 
-                <button type="submit" class="create-btn">Create Draft</button>
+                <button type="submit" class="create-btn" style="margin-top: 10px;">Create Draft</button>
             </form>
         </div>
     </div>
 
     <script>
+        // Text Animation Logic (copied from Dashboard)
+        const letterWrapClass = 'letter-wrap';
+        const letterWrapElements = document.getElementsByClassName(letterWrapClass);
+        
+        [...letterWrapElements].forEach(el => {
+            letterWrap(el, letterWrapClass);
+            // We don't need the full hover animation timeline here to keep it simple, just the span wrap
+        });
+
+        function letterWrap(el, cls) {
+            const words = el.textContent.split(' ');
+            const letters = [];
+            cls = cls || 'letter-wrap'
+            words.forEach(word => {
+                let html = '';
+                for (var letter in word) {
+                    html += `<span class="${cls}__char"><span class="${cls}__char-inner" data-letter="${word[letter]}">${word[letter]}</span></span>`;
+                };
+                let wrappedWords = `<span class="${cls}__word">${html}</span>`;
+                letters.push(wrappedWords);
+            });
+            return el.innerHTML = letters.join(' ');
+        }
+
+        // Smooth Scroll
+        if (window.innerWidth > 780) {
+            const lenis = new Lenis({ lerp: 0.1, smooth: true });
+            function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+            requestAnimationFrame(raf);
+        }
+
         // Modal Logic
         const modal = document.getElementById('createModal');
-        const modalBox = modal.querySelector('.modal-box');
-
+        
         function openModal() { 
             modal.style.display = 'flex'; 
             gsap.fromTo(".modal-box", {y: 50, opacity: 0}, {y: 0, opacity: 1, duration: 0.3});
         }
+        
         function closeModal() { 
             gsap.to(".modal-box", {y: 50, opacity: 0, duration: 0.3, onComplete: () => {
                 modal.style.display = 'none';
@@ -283,14 +533,6 @@
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
-
-        // Text Animation
-        function letterWrap(el, cls) {
-            const words = el.textContent.split(' ');
-            const letters = words.map(word => `<span class="letter-wrap__word">${word.split('').map(l => `<span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="${l}">${l}</span></span>`).join('')}</span>`);
-            el.innerHTML = letters.join(' ');
-        }
-        document.querySelectorAll('.letter-wrap').forEach(el => letterWrap(el, 'letter-wrap'));
 
         // Form Layout Logic
         function updateFormLayout() {
@@ -308,17 +550,14 @@
 
             if (type === 'Receipt') {
                 destGroup.style.display = 'block';
-                // Receipt needs destination (Warehouse), Source is External (Hidden)
             } else if (type === 'Delivery') {
                 sourceGroup.style.display = 'block';
-                // Delivery needs source (Warehouse), Destination is External (Hidden)
             } else if (type === 'Transfer') {
                 sourceGroup.style.display = 'block';
                 destGroup.style.display = 'block';
-                // Transfers needs both
             } else if (type === 'Adjustment') {
                 adjGroup.style.display = 'block';
-                qtyLabel.innerText = "Real Counted Quantity"; // Update label context
+                qtyLabel.innerText = "Real Counted Quantity";
             }
         }
         

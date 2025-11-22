@@ -1,315 +1,241 @@
 <!DOCTYPE html>
-<html lang="en" class="bg-black">
+<html data-wf-domain="www.stockmaster.app" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Scatch</title>
+    <meta charset="utf-8"/>
+    <title>StockMaster | Login</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+    <script type="text/javascript">WebFont.load({  google: {    families: ["Montserrat:100,100italic,200,200italic,300,300italic,400,400italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic","Oswald:200,300,400,500,600,700"]  }});</script>
     
-    <!-- Fonts: Montserrat & Oswald (from reference) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600&family=Oswald:wght@200;400;500&display=swap" rel="stylesheet">
-
-    <!-- Spline Viewer -->
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
 
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            overflow-x: hidden;
-            cursor: none; /* Custom cursor logic below */
+        /* --- StockMaster Theme Core --- */
+        body { 
+            background-color: #0e0e0e; 
+            color: #edf2f4; 
+            font-family: 'Montserrat', sans-serif; 
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0e0e0e 100%);
+            overflow: hidden;
         }
+
+        /* Typography */
+        h1, h2 { font-family: 'Oswald', sans-serif; text-transform: uppercase; }
         
-        h1, h2, h3, .brand-font {
-            font-family: 'Oswald', sans-serif;
+        /* Login Card Container - Matches Dashboard Cards */
+        .login-card {
+            background: #121212;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 50px;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            z-index: 2;
+            opacity: 0; /* for animation */
+            transform: translateY(20px); /* for animation */
         }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #000;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 3px;
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
         }
 
-        /* Letter Wrap Animation Styles (from reference) */
-        .letter-wrap {
-            display: inline-block;
-            position: relative;
-            overflow: hidden;
+        .brand-title {
+            font-size: 48px;
+            color: #fff;
+            letter-spacing: 2px;
+            margin: 0;
+            line-height: 1;
         }
-        .letter-wrap__word {
-            display: inline-flex;
-            position: relative;
-            overflow: hidden;
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: #666;
+            letter-spacing: 1px;
+            margin-top: 10px;
         }
-        .letter-wrap__char {
-            display: inline-block;
-            position: relative;
+
+        /* Form Elements matching Operations Page */
+        .form-group { margin-bottom: 25px; position: relative; }
+        
+        .form-label { 
+            display: block; 
+            color: #888; 
+            margin-bottom: 8px; 
+            font-family: 'Oswald', sans-serif; 
+            text-transform: uppercase; 
+            font-size: 12px; 
+            letter-spacing: 1px;
+        }
+
+        .form-input { 
+            width: 100%; 
+            box-sizing: border-box;
+            padding: 15px; 
+            background: #0e0e0e; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            color: white; 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: 14px;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        .form-input:focus { 
+            border-color: #4dff88; 
+            outline: none; 
+            box-shadow: 0 0 15px rgba(77, 255, 136, 0.1);
+        }
+
+        /* Animated Button */
+        .login-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #fff;
+            color: #000;
             text-transform: uppercase;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .letter-wrap__char-inner {
-            display: inline-block;
-        }
-        .letter-wrap__char-inner:after {
-            content: attr(data-letter);
-            position: absolute;
-            top: 100%;
-            left: 0;
-            color: #fff; 
+            font-family: 'Oswald', sans-serif;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            margin-top: 10px;
+            letter-spacing: 1px;
         }
 
-        /* Custom Cursor */
-        .cursor-dot,
-        .cursor-outline {
-            position: fixed;
-            top: 0;
+        .login-btn:hover {
+            background: #4dff88;
+            box-shadow: 0 0 20px rgba(77, 255, 136, 0.4);
+        }
+
+        /* Links */
+        .auth-links {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-link {
+            color: #666;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .auth-link:hover { color: #4dff88; }
+
+        /* Flash Messages */
+        .flash-message {
+            position: absolute;
+            top: -60px;
             left: 0;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            z-index: 9999;
-            pointer-events: none;
+            width: 100%;
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid #ff4d4d;
+            color: #ff4d4d;
+            padding: 12px;
+            font-family: 'Oswald';
+            text-transform: uppercase;
+            font-size: 12px;
+            text-align: center;
+            box-sizing: border-box;
         }
-        .cursor-dot {
-            width: 8px;
-            height: 8px;
-            background-color: white;
+
+        /* Decorative Background Elements */
+        .bg-shape {
+            position: absolute;
+            filter: blur(100px);
+            z-index: 1;
+            opacity: 0.4;
         }
-        .cursor-outline {
-            width: 40px;
-            height: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        .shape-1 {
+            top: -10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: #4dff88;
         }
-        
-        /* Input Autofill Fix for Dark Mode */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus, 
-        input:-webkit-autofill:active{
-            -webkit-box-shadow: 0 0 0 30px #111 inset !important;
-            -webkit-text-fill-color: white !important;
-            transition: background-color 5000s ease-in-out 0s;
+        .shape-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: #333;
         }
     </style>
 </head>
-<body class="bg-black text-white h-screen w-full relative flex items-center justify-center">
+<body>
 
-    <!-- Custom Cursor -->
-    <div class="cursor-dot"></div>
-    <div class="cursor-outline"></div>
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
 
-    <!-- 3D Background (Spline Scene) -->
-    <!-- Using a generic abstract scene similar to reference style -->
-    <div class="absolute inset-0 z-0 opacity-60">
-        <spline-viewer url="https://prod.spline.design/os6NRsumsgqdhK5E/scene.splinecode"></spline-viewer>
-    </div>
-    
-    <!-- Additional 3D Floating Object (Decorative) -->
-    <div class="absolute bottom-10 right-10 w-64 h-64 z-10 hidden lg:block pointer-events-none mix-blend-lighten">
-         <spline-viewer url="https://prod.spline.design/1Bx9E-NcKxZ8ZYrC/scene.splinecode"></spline-viewer>
-    </div>
-
-    <!-- Main Login Container -->
-    <div class="relative z-20 w-full max-w-md p-8">
+    <div class="login-card">
         
-        <!-- Animated Header -->
-        <div class="text-center mb-12 overflow-hidden">
-            <div class="inline-block">
-                <h2 class="text-5xl md:text-7xl font-bold uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 split-text-anim">
-                    SCATCH
-                </h2>
+        <% if(typeof error !== 'undefined' && error.length > 0){ %>
+            <div class="flash-message" id="flash-msg">
+                <%= error %>
             </div>
-            <p class="text-gray-400 text-sm mt-4 tracking-[0.2em] uppercase opacity-0 fade-in-anim">
-                Because content is what matters
-            </p>
+        <% } %>
+
+        <div class="login-header">
+            <h1 class="brand-title">Stock Master</h1>
+            <div class="brand-subtitle">Inventory Management System Access</div>
         </div>
 
-        <!-- Login Form -->
-        <div class="bg-zinc-900/30 backdrop-blur-xl border border-zinc-800/50 p-8 rounded-none shadow-2xl transform transition-all duration-500 opacity-0 translate-y-10 form-container-anim">
-            
-            <form autocomplete="off" action="/users/login" method="post" class="flex flex-col gap-6">
-                
-                <div class="group relative">
-                    <input 
-                        class="w-full bg-transparent border-b border-zinc-700 py-3 text-white placeholder-transparent focus:outline-none focus:border-white transition-colors peer" 
-                        type="text" 
-                        name="LoginID"
-                        id="LoginID"
-                        required
-                    >
-                    <label for="LoginID" class="absolute left-0 -top-3.5 text-zinc-500 text-xs transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-white peer-focus:text-xs">LoginID</label>
-                </div>
-
-                <div class="group relative">
-                    <input 
-                        class="w-full bg-transparent border-b border-zinc-700 py-3 text-white placeholder-transparent focus:outline-none focus:border-white transition-colors peer" 
-                        type="password" 
-                        name="password"
-                        id="password"
-                        required
-                    >
-                    <label for="password" class="absolute left-0 -top-3.5 text-zinc-500 text-xs transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-zinc-500 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-white peer-focus:text-xs">Password</label>
-                </div>
-
-                <!-- Custom Animated Button (Replicating SoScale Hover) -->
-                <button type="submit" class="w-full mt-8 group relative overflow-hidden bg-white text-black py-4 font-bold uppercase tracking-wider text-sm hover:bg-zinc-200 transition-colors">
-                    <div class="letter-wrap pointer-events-none">
-                        <span class="letter-wrap__word">
-                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="L">L</span></span>
-                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="O">O</span></span>
-                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="G">G</span></span>
-                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="I">I</span></span>
-                            <span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="N">N</span></span>
-                        </span>
-                    </div>
-                </button>
-
-            </form>
-
-            <div class="mt-8 flex justify-between items-center text-xs uppercase tracking-widest text-zinc-500">
-                <a href="/register_user" class="hover:text-white transition-colors">Create Account</a>
-               <a href="/forgot-password" class="hover:text-white transition-colors">Forgot Password?</a>
+        <form autocomplete="off" action="/users/login" method="post">
+            <div class="form-group">
+                <label for="LoginID" class="form-label">Login ID</label>
+                <input class="form-input" type="text" name="LoginID" id="LoginID" required>
             </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input class="form-input" type="password" name="password" id="password" required>
+            </div>
+
+            <button type="submit" class="login-btn">
+                Initialize Session
+            </button>
+        </form>
+
+        <div class="auth-links">
+            <a href="/register_user" class="auth-link">Create Account</a>
+            <a href="/forgot-password" class="auth-link">Forgot Password?</a>
         </div>
     </div>
-
-    <!-- Flash Messages -->
-    <% if(typeof error !== 'undefined' && error.length > 0){ %>
-        <div id="flash-msg" class="absolute top-10 right-10 px-6 py-4 bg-red-900/80 backdrop-blur border-l-2 border-red-500 text-white text-sm font-mono tracking-wide z-50 opacity-0 translate-x-10">
-            [ERROR]: <%= error %>
-        </div>
-    <% } %>
-
-    <!-- Libraries: GSAP & SplitType -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://unpkg.com/split-type"></script>
 
     <script>
-        // --- 1. Custom Cursor Logic ---
-        const cursorDot = document.querySelector('.cursor-dot');
-        const cursorOutline = document.querySelector('.cursor-outline');
-
-        window.addEventListener('mousemove', (e) => {
-            const posX = e.clientX;
-            const posY = e.clientY;
-
-            // Dot follows immediately
-            cursorDot.style.left = `${posX}px`;
-            cursorDot.style.top = `${posY}px`;
-
-            // Outline follows with delay (using GSAP for smoothness)
-            gsap.to(cursorOutline, {
-                x: posX,
-                y: posY,
-                duration: 0.15,
-                ease: "power2.out"
+        // Entrance Animation matching the smooth feel of the dashboard
+        document.addEventListener("DOMContentLoaded", (event) => {
+            gsap.to(".login-card", {
+                duration: 0.8, 
+                y: 0, 
+                opacity: 1, 
+                ease: "power3.out",
+                delay: 0.2
             });
+
+            // Flash message auto-dismiss
+            const flash = document.getElementById('flash-msg');
+            if (flash) {
+                gsap.from(flash, { y: -10, opacity: 0, duration: 0.5 });
+                setTimeout(() => {
+                    gsap.to(flash, { opacity: 0, y: -10, duration: 0.5, onComplete: () => flash.remove() });
+                }, 4000);
+            }
         });
-
-        // --- 2. Entrance Animations ---
-        const tl = gsap.timeline();
-
-        // Split Text Animation for Title
-        const myText = new SplitType('.split-text-anim', { types: 'chars' });
-        
-        tl.from(myText.chars, {
-            y: 100,
-            opacity: 0,
-            rotateX: -90,
-            stagger: 0.05,
-            delay: 0.5,
-            duration: 1,
-            ease: "back.out(1.7)"
-        })
-        .to('.fade-in-anim', {
-            opacity: 1,
-            duration: 1,
-            ease: "power2.out"
-        }, "-=0.5")
-        .to('.form-container-anim', {
-            y: 0,
-            opacity: 1,
-            duration: 0.8,
-            ease: "power3.out"
-        }, "-=0.5");
-
-        // --- 3. Button Hover Animation (Letter Wrap) ---
-        const buttons = document.querySelectorAll('button');
-        
-        buttons.forEach(btn => {
-            const chars = btn.querySelectorAll('.letter-wrap__char');
-            const charInners = btn.querySelectorAll('.letter-wrap__char-inner');
-
-            btn.addEventListener('mouseenter', () => {
-                gsap.to(charInners, {
-                    y: '-100%',
-                    duration: 0.3,
-                    stagger: 0.025,
-                    ease: "power2.out"
-                });
-            });
-
-            btn.addEventListener('mouseleave', () => {
-                gsap.to(charInners, {
-                    y: '0%',
-                    duration: 0.3,
-                    stagger: 0.025,
-                    ease: "power2.out"
-                });
-            });
-        });
-
-        // --- 4. Interactive Form Animations ---
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.addEventListener('focus', () => {
-                gsap.to(cursorOutline, {
-                    width: '60px',
-                    height: '60px',
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    borderColor: 'transparent',
-                    duration: 0.3
-                });
-            });
-            input.addEventListener('blur', () => {
-                gsap.to(cursorOutline, {
-                    width: '40px',
-                    height: '40px',
-                    backgroundColor: 'transparent',
-                    borderColor: 'rgba(255,255,255,0.5)',
-                    duration: 0.3
-                });
-            });
-        });
-
-        // --- 5. Flash Message Animation ---
-        const flashMsg = document.getElementById('flash-msg');
-        if(flashMsg) {
-            gsap.to(flashMsg, {
-                x: 0,
-                opacity: 1,
-                duration: 0.5,
-                ease: "power3.out"
-            });
-            
-            // Auto dismiss
-            gsap.to(flashMsg, {
-                x: 50,
-                opacity: 0,
-                delay: 4,
-                duration: 0.5,
-                onComplete: () => flashMsg.remove()
-            });
-        }
     </script>
 </body>
 </html>
