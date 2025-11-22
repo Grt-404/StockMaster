@@ -178,5 +178,21 @@ router.get('/profile/security', isLoggedin, async (req, res) => {
         error: req.flash('error')
     });
 });
+// GET: Render Forgot Password Page
+router.get('/forgot-password', (req, res) => {
+    res.render('forgot-email', {
+        error: req.flash('error'),
+        success: req.flash('success')
+    });
+});
+
+// POST: Handle Forgot Password Logic
+router.post('/forgot-password', authController.forgotPassword);
+
+// GET: Render Reset Password Page (from the email link)
+router.get('/reset-password/:id/:token', authController.resetPasswordGet);
+
+// POST: Handle Reset Password Logic
+router.post('/reset-password/:id/:token', authController.resetPasswordPost);
 
 module.exports = router;
