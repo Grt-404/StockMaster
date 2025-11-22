@@ -5,17 +5,26 @@ const productModel = require('../models/product-model');
 const warehouseModel = require('../models/warehouse-model');
 const isLoggedIn = require('../middlewares/isLoggedin');
 
-// Helper: Update Stock Balance
-async function updateStock(productId, warehouseId, qtyChange) {
+// Helper: Update Stock Balance (Modified to support "SET" operation)
+async function updateStock(productId, warehouseId, qty, mode = 'add') {
     let product = await productModel.findById(productId);
 
     // Find specific location entry
     let stockEntry = product.stockByLocation.find(s => s.warehouse.toString() === warehouseId.toString());
 
     if (stockEntry) {
-        stockEntry.quantity += qtyChange;
+        if (mode === 'set') {
+            stockEntry.quantity = qty; // Force set value (for Adjustments)
+        } else {
+            stockEntry.quantity += qty; // Add/Subtract (for Receipts/Deliveries)
+        }
     } else {
-        product.stockByLocation.push({ warehouse: warehouseId, quantity: qtyChange });
+        // If location doesn't exist yet
+        if (mode === 'set') {
+            product.stockByLocation.push({ warehouse: warehouseId, quantity: qty });
+        } else {
+            product.stockByLocation.push({ warehouse: warehouseId, quantity: qty });
+        }
     }
 
     // Recalculate Total Global Stock
@@ -33,7 +42,6 @@ router.get('/', isLoggedIn, async (req, res) => {
             .sort({ createdAt: -1 });
 
         const products = await productModel.find();
-        // Sort warehouses by Path so "Main / Row 1" appears under "Main"
         const warehouses = await warehouseModel.find({ type: 'Internal' }).sort('path');
 
         res.render('operations', {
@@ -51,12 +59,20 @@ router.get('/', isLoggedIn, async (req, res) => {
 // POST: Create Operation
 router.post('/create', isLoggedIn, async (req, res) => {
     try {
-        const { type, partner, product, quantity, source, destination } = req.body;
+        const { type, partner, product, quantity, source, destination, location } = req.body;
 
-        // Validation: Transfers need both locations
-        if (type === 'Transfer' && (!source || !destination)) {
-            req.flash('error', 'Transfers require both Source and Destination locations.');
-            return res.redirect('/operations');
+        // For Adjustment, 'location' (from form) acts as the target
+        // For Delivery/Transfer, 'source' is used
+        // For Receipt, 'destination' is used
+
+        let sourceLoc = source;
+        let destLoc = destination;
+
+        // Special handling for Adjustment: It affects one specific location
+        if (type === 'Adjustment') {
+            // We store the target warehouse in "sourceLocation" for simplicity in the schema
+            sourceLoc = location;
+            destLoc = null;
         }
 
         const generatedRef = `${type.toUpperCase().slice(0, 3)}/${Date.now().toString().slice(-6)}`;
@@ -65,8 +81,8 @@ router.post('/create', isLoggedIn, async (req, res) => {
             type,
             reference: generatedRef,
             partner,
-            sourceLocation: source || null, // null for Receipts
-            destinationLocation: destination || null, // null for Deliveries
+            sourceLocation: sourceLoc || null,
+            destinationLocation: destLoc || null,
             items: [{ product, quantity: Number(quantity) }],
             status: 'Draft'
         });
@@ -79,7 +95,7 @@ router.post('/create', isLoggedIn, async (req, res) => {
     }
 });
 
-// POST: Validate (Move the Stock)
+// POST: Validate (Execute Stock Change)
 router.post('/validate/:id', isLoggedIn, async (req, res) => {
     try {
         const operation = await operationModel.findById(req.params.id).populate('items.product');
@@ -87,27 +103,29 @@ router.post('/validate/:id', isLoggedIn, async (req, res) => {
         if (operation.status !== 'Draft') return res.redirect('/operations');
 
         for (let item of operation.items) {
-            // 1. Remove from Source
-            if (operation.sourceLocation) {
-                const source = await warehouseModel.findById(operation.sourceLocation);
-                if (source.type === 'Internal') {
-                    // Check balance
-                    const prod = await productModel.findById(item.product._id);
-                    const entry = prod.stockByLocation.find(s => s.warehouse.toString() === source._id.toString());
-
-                    if (!entry || entry.quantity < item.quantity) {
-                        req.flash('error', `Insufficient stock in ${source.name}`);
-                        return res.redirect('/operations');
-                    }
-                    await updateStock(item.product._id, operation.sourceLocation, -item.quantity);
+            if (operation.type === 'Adjustment') {
+                // ADJUSTMENT LOGIC: Set stock to counted quantity
+                if (operation.sourceLocation) {
+                    await updateStock(item.product._id, operation.sourceLocation, item.quantity, 'set');
                 }
             }
-
-            // 2. Add to Destination
-            if (operation.destinationLocation) {
-                const dest = await warehouseModel.findById(operation.destinationLocation);
-                if (dest.type === 'Internal') {
-                    await updateStock(item.product._id, operation.destinationLocation, item.quantity);
+            else if (operation.type === 'Receipt') {
+                // RECEIPT LOGIC: Add to Destination
+                if (operation.destinationLocation) {
+                    await updateStock(item.product._id, operation.destinationLocation, item.quantity, 'add');
+                }
+            }
+            else if (operation.type === 'Delivery') {
+                // DELIVERY LOGIC: Remove from Source
+                if (operation.sourceLocation) {
+                    await updateStock(item.product._id, operation.sourceLocation, -item.quantity, 'add');
+                }
+            }
+            else if (operation.type === 'Transfer') {
+                // TRANSFER LOGIC: Move A -> B
+                if (operation.sourceLocation && operation.destinationLocation) {
+                    await updateStock(item.product._id, operation.sourceLocation, -item.quantity, 'add');
+                    await updateStock(item.product._id, operation.destinationLocation, item.quantity, 'add');
                 }
             }
         }
@@ -115,7 +133,7 @@ router.post('/validate/:id', isLoggedIn, async (req, res) => {
         operation.status = 'Done';
         await operation.save();
 
-        req.flash('success', 'Movement Validated.');
+        req.flash('success', 'Stock updated successfully.');
         res.redirect('/operations');
     } catch (err) {
         req.flash('error', err.message);
