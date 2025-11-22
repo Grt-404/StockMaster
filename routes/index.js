@@ -1,3 +1,4 @@
+const authController = require('../controllers/authController');
 const express = require('express');
 const router = express.Router();
 const isLoggedin = require('../middlewares/isLoggedin');
@@ -20,7 +21,19 @@ router.get("/register_user", (req, res) => {
     const error = req.flash("error");
     res.render("register", { error });
 });
+// Forgot Password Page (Enter Email)
+router.get("/forgot-password", (req, res) => {
+    res.render("forgot-email", { error: req.flash("error"), success: req.flash("success") });
+});
 
+// Handle Email Submission
+router.post("/forgot-password", authController.forgotPassword);
+
+// Reset Password Page (Enter New Password)
+router.get("/reset-password/:id/:token", authController.resetPasswordGet);
+
+// Handle New Password Submission
+router.post("/reset-password/:id/:token", authController.resetPasswordPost);
 // 3. DASHBOARD ROUTE (Real Data Connection)
 router.get('/home', isLoggedin, async (req, res) => {
     try {
