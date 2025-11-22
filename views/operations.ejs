@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html data-wf-domain="www.soscalemedia.se" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>StockMaster | Operations</title>
+    <link href="https://cdn.prod.website-files.com/67a323a1c68594827fa0cca9/css/soscale-39349c-c66c87b5666753b1b89d5bc1.webflow.shared.1aa2f82cd.css" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+    <script type="text/javascript">WebFont.load({  google: {    families: ["Montserrat:100,100italic,200,200italic,300,300italic,400,400italic,500,500italic,600,600italic,700,700italic,800,800italic,900,900italic","Oswald:200,300,400,500,600,700"]  }});</script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer ></script>
+
+    <style>
+        /* Helper Styles same as Products.ejs */
+        .dashboard-section { padding-top: 120px; padding-bottom: 60px; min-height: 100vh; background-color: #0e0e0e; color: white; }
+        .dashboard-grid { display: grid; grid-template-columns: 250px 1fr; gap: 40px; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .sidebar-menu { border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px; }
+        .sidebar-item { display: block; padding: 15px 0; color: #888; text-decoration: none; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-item:hover, .sidebar-item.active { color: #fff; }
+        
+        .ops-table { width: 100%; border-collapse: collapse; margin-top: 30px; font-family: 'Montserrat', sans-serif; }
+        .ops-table th { text-align: left; padding: 15px; border-bottom: 2px solid #fff; font-family: 'Oswald', sans-serif; text-transform: uppercase; color: #888; font-size: 12px; }
+        .ops-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 14px; vertical-align: middle; }
+        
+        .status-badge { padding: 5px 10px; border-radius: 4px; font-size: 11px; text-transform: uppercase; font-weight: 600; display: inline-block; }
+        .status-draft { background: rgba(255, 255, 255, 0.1); color: #aaa; border: 1px solid #555; }
+        .status-done { background: rgba(77, 255, 136, 0.1); color: #4dff88; border: 1px solid #4dff88; }
+        
+        .validate-btn { background: white; color: black; border: none; padding: 6px 12px; font-family: 'Oswald'; text-transform: uppercase; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .validate-btn:hover { background: #4dff88; color: black; }
+
+        /* Modal Styles */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1a1a1a; padding: 40px; width: 100%; max-width: 500px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; color: #888; margin-bottom: 8px; font-family: 'Oswald', sans-serif; text-transform: uppercase; font-size: 12px; }
+        .form-input { width: 100%; padding: 12px; background: #0e0e0e; border: 1px solid rgba(255,255,255,0.1); color: white; font-family: 'Montserrat', sans-serif; }
+        .create-btn { display: inline-block; padding: 12px 30px; background: white; color: black; text-transform: uppercase; font-family: 'Oswald', sans-serif; font-size: 14px; border: none; cursor: pointer; width: 100%; }
+        .w-webflow-badge { display: none !important; } 
+    </style>
+</head>
+<body class="body">
+    <nav class="hero-wrap">
+        <a href="/" class="header-text-left _1 fixed-right-mob w-inline-block"><div class="letter-wrap black">STOCKMASTER</div></a>
+        <div class="header-text-left fixed-left">
+            <div class="header-text-left fix-size">
+                <a href="/home" class="menu-link-block w-inline-block"><div class="letter-wrap">Dashboard</div></a>
+                <a href="/products" class="menu-link-block w-inline-block"><div class="letter-wrap">Products</div></a>
+                <a href="/operations" aria-current="page" class="menu-link-block w-inline-block w--current"><div class="letter-wrap">Operations</div></a>
+            </div>
+        </div>
+        <div class="header-text-left fixed-center"><div class="hacker-text _1">Operations & Moves</div></div>
+        <a href="/users/logout" class="header-text-left _1 fixed-right w-inline-block">
+            <img src="https://cdn.prod.website-files.com/67a323a1c68594827fa0cca9/67a323a1c68594827fa0ccb4_Vector.svg" alt="" class="arrow-black"/>
+            <div class="letter-wrap black">LOGOUT</div>
+        </a>
+    </nav>
+
+    <section class="dashboard-section">
+        <div class="dashboard-grid">
+            <aside class="sidebar-menu">
+                <div style="margin-bottom: 40px;">
+                    <h3 class="form-label" style="color: white; margin-bottom: 20px;">Menu</h3>
+                    <a href="#" class="sidebar-item active">All Operations</a>
+                    <a href="#" class="sidebar-item">Receipts (IN)</a>
+                    <a href="#" class="sidebar-item">Deliveries (OUT)</a>
+                </div>
+                <button onclick="openModal()" class="create-btn">+ New Operation</button>
+            </aside>
+
+            <div class="main-content">
+                <% if (success && success.length > 0) { %>
+                    <div style="background: rgba(77, 255, 136, 0.1); color: #4dff88; padding: 15px; border: 1px solid #4dff88; margin-bottom: 20px; font-family: 'Oswald';"><%= success %></div>
+                <% } %>
+                <% if (error && error.length > 0) { %>
+                    <div style="background: rgba(255, 77, 77, 0.1); color: #ff4d4d; padding: 15px; border: 1px solid #ff4d4d; margin-bottom: 20px; font-family: 'Oswald';"><%= error %></div>
+                <% } %>
+
+                <h2 style="font-family: 'Oswald', sans-serif; font-size: 32px; margin-bottom: 20px;">Movement History</h2>
+
+                <table class="ops-table">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Type</th>
+                            <th>Partner</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (operations.length > 0) { %>
+                            <% operations.forEach(function(op) { %>
+                                <tr>
+                                    <td style="font-family: 'Oswald'; letter-spacing: 1px;"><%= op.reference %></td>
+                                    <td>
+                                        <% if(op.type == 'Receipt') { %><span style="color:#4dff88">IN</span><% } %>
+                                        <% if(op.type == 'Delivery') { %><span style="color:#ffaa4d">OUT</span><% } %>
+                                        <% if(op.type == 'Transfer') { %><span>INT</span><% } %>
+                                    </td>
+                                    <td><%= op.partner || '-' %></td>
+                                    <td>
+                                        <% if(op.items[0] && op.items[0].product) { %>
+                                            <%= op.items[0].product.name %>
+                                        <% } else { %>
+                                            <span style="color:#555;">Deleted</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= op.items[0].quantity %></td>
+                                    <td>
+                                        <span class="status-badge <%= op.status == 'Done' ? 'status-done' : 'status-draft' %>">
+                                            <%= op.status %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% if (op.status === 'Draft') { %>
+                                            <form action="/operations/validate/<%= op._id %>" method="POST" style="display:inline;">
+                                                <button type="submit" class="validate-btn">Validate</button>
+                                            </form>
+                                        <% } else { %>
+                                            <span style="color:#555; font-size:12px;">LOCKED</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr><td colspan="7" style="text-align:center; padding: 30px; color: #666;">No operations found.</td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <div id="createModal" class="modal-overlay">
+        <div class="modal-box">
+            <div style="position:absolute; top:20px; right:20px; cursor:pointer; color:white;" onclick="closeModal()">✕</div>
+            <h2 style="font-family: 'Oswald'; text-transform: uppercase; margin-bottom: 30px;">Create Operation</h2>
+            
+            <form action="/operations/create" method="POST">
+                <div class="form-group">
+                    <label class="form-label">Operation Type</label>
+                    <select name="type" class="form-input" style="height: 45px;">
+                        <option value="Receipt">Receipt (Incoming / Vendor)</option>
+                        <option value="Delivery">Delivery (Outgoing / Customer)</option>
+                        <option value="Transfer">Internal Transfer</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Partner (Optional)</label>
+                    <input type="text" name="partner" class="form-input" placeholder="e.g. Supplier Name or Customer Name">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label class="form-label">Product</label>
+                        <select name="product" class="form-input" style="height: 45px;" required>
+                            <% products.forEach(function(prod) { %>
+                                <option value="<%= prod._id %>"><%= prod.name %> (Cur: <%= prod.stock %>)</option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" name="quantity" class="form-input" value="1" min="1" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="create-btn">Save Draft</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('createModal');
+        function openModal() { 
+            modal.style.display = 'flex'; 
+            gsap.fromTo(".modal-box", {y: 50, opacity: 0}, {y: 0, opacity: 1, duration: 0.3});
+        }
+        function closeModal() { modal.style.display = 'none'; }
+        
+        // Text animation
+        function letterWrap(el) {
+            const words = el.textContent.split(' ');
+            const letters = words.map(word => `<span class="letter-wrap__word">${word.split('').map(l => `<span class="letter-wrap__char"><span class="letter-wrap__char-inner" data-letter="${l}">${l}</span></span>`).join('')}</span>`);
+            el.innerHTML = letters.join(' ');
+        }
+        document.querySelectorAll('.letter-wrap').forEach(el => letterWrap(el));
+    </script>
+</body>
+</html>

@@ -1,14 +1,15 @@
 const express = require("express");
 const app = express();
 require('dotenv').config();
-const db = require('./config/mongoose-connection'); // Ensure this file exists and connects properly
+const db = require('./config/mongoose-connection');
 const path = require("path");
 const indexRouter = require("./routes/index");
 const cookieParser = require('cookie-parser');
 const flash = require("connect-flash");
 const expressSession = require("express-session");
 const usersRouter = require('./routes/usersRouter');
-const productsRouter = require('./routes/productsRouter'); // Import the new router
+const productsRouter = require('./routes/productsRouter');
+const operationsRouter = require('./routes/operationsRouter');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,13 +26,14 @@ app.use(
     })
 );
 
-// 2. Flash MUST be set up after session
+
 app.use(flash());
 
-// 3. Routes MUST be set up last (so they have access to flash)
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/products', productsRouter); // <--- PLACE IT HERE, AFTER FLASH
+app.use('/products', productsRouter);
+app.use('/operations', operationsRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

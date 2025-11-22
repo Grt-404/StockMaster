@@ -245,7 +245,11 @@
                             <% products.forEach(function(product) { %>
                                 <tr class="product-row">
                                     <td style="font-family: 'Oswald', sans-serif; letter-spacing: 1px;"><%= product.sku %></td>
-                                    <td><%= product.name %></td>
+                                    <td>
+    <a href="/products/<%= product._id %>/history" style="color: white; text-decoration: underline;">
+        <%= product.name %>
+    </a>
+</td>
                                     <td><%= product.category %></td>
                                     <td><%= product.unitOfMeasure %></td>
                                     <td><%= product.stock %></td>
