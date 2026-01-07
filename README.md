@@ -4,16 +4,6 @@ A robust full-stack web application for efficient inventory tracking, multi-ware
 
 ---
 
-### 👥 Team Details
-**Team Name:** GRT-404
-**Team Members:**
-* Gurpreet Arora - Team Leader
-* Suryansh 
-* Rohan
-* Ashutosh
-
----
-
 ### 🎯 Problem Statement
 **Efficient Warehouse & Inventory Optimization**
 Managing inventory across multiple physical locations is often plagued by data discrepancies, lack of real-time visibility, and inefficient manual tracking. This project aims to solve these issues by developing a digital **Warehouse Management System** that provides:
@@ -24,10 +14,6 @@ Managing inventory across multiple physical locations is often plagued by data d
 
 ---
 
-### 👤 Reviewer Name
-Aman Patel
-
----
 
 ### 📹 Functional Video Link
 https://drive.google.com/file/d/11TwoDIlydOjShCh9P79gM66O2uc1nuit/view?usp=sharing
