@@ -7,7 +7,7 @@ const dbgr = require('debug')("development:mongoose");
 
 // 2. Connect using the environment variable
 mongoose
-    .connect(`${process.env.MONGODB_URI}/scatch`) // Ensure '/scatch' or your DB name is appended
+    .connect(`${process.env.MONGODB_URI}`) // Ensure '/scatch' or your DB name is appended
     .then(function () {
         dbgr("connected");
         console.log("connected to MongoDB"); // Explicit console log for debugging
